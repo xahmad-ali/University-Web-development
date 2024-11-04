@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <link href="../output.css" rel="stylesheet">
+</head>
+<body>
+    <div class="w-full h-screen bg-slate-100 flex flex-row">
+
+        <div class="w-full p-4 ">
+            <h1 class="font-bold text-2xl mb-4">List of persons</h1>
+            <div class="overflow-x-auto">
+                <table class="w-full max-w-4xl border-collapse table-fixed">
+                    <thead>
+                        <tr class="bg-gray-300 border-b border-black">
+                            <th class="p-2 text-left border-r border-black w-1/5">Name</th>
+                            <th class="p-2 text-left border-r border-black w-1/5">Gender</th>
+                            <th class="p-2 text-left border-r border-black w-1/5">Age</th>
+                            <th class="p-2 text-left border-r border-black w-1/5">City</th>
+                            <th class="p-2 text-left w-1/5">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody" class="">
+                        <!-- <tr id="trrows" class="border-b">
+                            <td class="p-2 border-r">Shahzad</td>
+                            <td class="p-2 border-r">Male</td>
+                            <td class="p-2 border-r">30</td>
+                            <td class="p-2 border-r">Lahore</td>
+                            <td class="p-2">Update / Remove</td>
+                        </tr> -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+        <div class="bg-white p-6 rounded shadow-md w-2/6 flex-shrink ">
+            <h1 class="font-bold text-2xl mb-6 tracking-tight ">Add / Update Person Form</h1>
+            <form class="space-y-4">
+                <div class="flex items-center">
+                    <label for="name" class="w-24 font-medium">Name:</label>
+                    <input id="name" type="text" class="border border-gray-300 p-1 w-full rounded" placeholder="Enter name">
+                </div>
+                <div class="flex items-center">
+                    <label class="w-24 font-medium">Gender:</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="gender" value="Male" class="mr-1">
+                            <span>Male</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="gender" value="Female" class="mr-1">
+                            <span>Female</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <label for="age" class="w-24 font-medium">Age:</label>
+                    <input id="age" type="number" class="border border-gray-300 p-1 w-full rounded" placeholder="Enter age">
+                </div>
+                <div class="flex items-center">
+                    <label for="city" class="w-24 font-medium">City:</label>
+                    <select id="city" class="border border-gray-300 p-1 w-full rounded">
+                        <option value="lahore">Lahore</option>
+                        <option value="karachi">Karachi</option>
+                        <option value="islamabad">Islamabad</option>
+                    </select>
+                </div>
+                <div class="flex justify-between">
+                    <button id="resetbtn" type="reset" onclick="reset()" class="bg-gray-200 border border-gray-400 px-4 py-1 rounded">Reset</button>
+                    <button id="addbtn" type="button" onclick="addnew()" class="bg-gray-300 border border-gray-400 px-4 py-1 rounded">Add</button>
+                    <button id="updatebtn" type="button" onclick="handleUpdate()" class="bg-gray-300 border border-gray-400 px-4 py-1 rounded">Update</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    
+</body>
+<script>
+
+    document.addEventListener("DOMContentLoaded",()=>{
+        const upbtn = document.getElementById("updatebtn")
+        upbtn.disabled = true;
+        upbtn.classList.add("bg-zinc-800")
+    })
+
+    let currentRow = null
+
+    const addnew=()=>{
+        // console.log("ahmad")
+        let name = document.getElementById("name")
+        let gender = document.querySelector('input[name="gender"]:checked')
+        let age = document.getElementById("age")
+        let city = document.getElementById("city")
+
+        if(!name.value || !gender.value || !age.value || !city.value){
+            console.log("enter all values")
+            alert("enter all values")
+        }
+
+        let tb = document.getElementById("tbody")
+        let tr = document.createElement("tr")
+
+        let td1 = document.createElement("td")
+        // td1.classList.add("m-5")
+        td1.innerHTML = name.value
+        let td2 = document.createElement("td")
+        td2.innerHTML = gender.value
+        let td3 = document.createElement("td")
+        td3.innerHTML = age.value
+        let td4 = document.createElement("td")
+        td4.innerHTML = city.value
+
+        let updateLink = document.createElement("a")
+        updateLink.href = "#"
+        updateLink.innerText = "Update";
+        updateLink.onclick=(event)=>{
+
+            event.preventDefault()
+            // populateForm(name.value, gender.value, age.value, city.value, tr);
+            name.value =td1.innerText
+            age.value = td3.innerText
+            city.value = td4.innerText
+            const genderV = td2.innerText
+            const inputgender = document.querySelector(`input[name="gender"][value = "${genderV}"]`)
+            inputgender.checked =true
+            currentRow=tr
+
+            const upbtn = document.getElementById("updatebtn")
+            upbtn.disabled = false;
+            upbtn.classList.remove("bg-zinc-800")
+
+            const addbtn = document.getElementById("addbtn")
+            addbtn.disabled = true;
+            addbtn.classList.add("bg-zinc-800")
+        }
+
+        let removeLink = document.createElement("a");
+        removeLink.href = "#"; // Placeholder link, update as needed
+        removeLink.innerText = "Remove";
+        removeLink.onclick=(event)=>{
+            event.preventDefault()
+            handleRemove(tr)
+        }
+
+        // Append the cells to the row
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.append(updateLink," / ",removeLink)
+        tb.appendChild(tr)
+        
+
+    }
+
+    const handleRemove = (tr)=>{
+        // console.log("clicked")
+        // console.log(tr)
+        tr.remove()
+    }
+
+    const handleUpdate = ()=>{
+        let name = document.getElementById("name")
+        let gender = document.querySelector('input[name="gender"]:checked')
+        let age = document.getElementById("age")
+        let city = document.getElementById("city")
+        if(!name.value || !gender.value || !age.value || !city.value){
+            console.log("enter all values")
+            alert("enter all values")
+        }
+        // let tb = document.getElementById("tbody")
+
+        currentRow.cells[0].innerText = name.value
+        currentRow.cells[1].innerText = gender.value
+        currentRow.cells[2].innerText = age.value
+        currentRow.cells[3].innerText = city.value
+
+        currentRow = null;
+
+        reset()
+        const addbtn = document.getElementById("addbtn")
+        addbtn.disabled = false;
+        addbtn.classList.remove("bg-zinc-800")
+
+    }
+
+    const reset =()=>{
+        let name = document.getElementById("name")
+        let gender = document.querySelector('input[name="gender"]:checked')
+        let age = document.getElementById("age")
+        let city = document.getElementById("city")
+
+        name.value = '';
+        gender.checked = false; // Reset the radio button
+        age.value = '';
+        city.value = 'lahore';
+    }
+
+
+</script>
+</html>
