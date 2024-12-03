@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Add Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+    
+    <div class="grid lg:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-4 shadow-md rounded-md" id="cell1">
+            <h2 class="text-lg font-bold mb-4">Months</h2>
+            <div id="months" class="space-y-2">
+                
+            </div>
+        </div>
+
+
+        <div class="bg-white p-4 shadow-md rounded-md overflow-auto h-64 " id="cell2">
+            <h2 class="text-lg font-bold mb-4">Expenses</h2>
+            <table class="w-full border-collapse border border-gray-300 text-left text-sm " id="expenseTable">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 px-2 py-1">Sr. #</th>
+                        <th class="border border-gray-300 px-2 py-1">Category</th>
+                        <th class="border border-gray-300 px-2 py-1">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-100">
+                        <td colspan="2" class="border border-gray-300 px-2 py-1 font-bold">Grand Total</td>
+                        <td class="border border-gray-300 px-2 py-1" id="grandTotal"></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <button class="mt-4 px-4 py-2 text-white rounded" id="showDetails">Show Details</button>
+        </div>
+
+        <div class="bg-white p-4 shadow-md rounded-md overflow-auto h-64 " id="cell3">
+            <h2 class="text-lg font-bold mb-4">Details</h2>
+            <table class="w-full border-collapse border border-gray-300 text-left text-sm" id="detailsTable">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 px-2 py-1">Sr. #</th>
+                        <th class="border border-gray-300 px-2 py-1">Description</th>
+                        <th class="border border-gray-300 px-2 py-1">Category</th>
+                        <th class="border border-gray-300 px-2 py-1">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-100">
+                        <td colspan="3" class="border border-gray-300 px-2 py-1 font-bold">Total Amount</td>
+                        <td class="border border-gray-300 px-2 py-1" id="totalAmount">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="bg-white p-4 shadow-md rounded-md">
+        <h2 class="text-lg font-bold mb-4">Add Expense</h2>
+        <form id="addExpenseForm" class="space-y-4">
+            <div>
+                <label class="block font-medium mb-1">Description</label>
+                <input type="text" id="description" class="w-full px-3 py-2 border rounded" required />
+            </div>
+            <div>
+                <label class="block font-medium mb-1">Category</label>
+                <input type="text" id="category" class="w-full px-3 py-2 border rounded" required />
+            </div>
+            <div>
+                <label class="block font-medium mb-1">Amount</label>
+                <input type="number" id="amount" class="w-full px-3 py-2 border rounded" required />
+            </div>
+            <div>
+                <label class="block font-medium mb-1">Month</label>
+                <input type="text" id="month" class="w-full px-3 py-2 border rounded" required />
+            </div>
+            <button type="submit" class="mt-4 px-4 py-2 bg-green-500 text-white rounded">
+                Add Expense
+            </button>
+        </form>
+    </div>
+</body>
+<script>
+
+    let apiData = []
+    let selectedMonth = ""
+
+    window.onload = function fetching(){
+    const showDetailsButton = document.getElementById("showDetails");
+    showDetailsButton.disabled = true; // Disable the button
+    showDetailsButton.classList.add("bg-gray-500", "cursor-not-allowed"); // Add inactive styles
+    showDetailsButton.classList.remove("bg-blue-500", "cursor-pointer");
+    const addExpenseForm = document.getElementById("addExpenseForm");
+
+        fetch("http://192.155.90.208/expenses.json")
+        .then((response) => response.json())
+        .then((data) => {
+            apiData = data 
+            displayMonths()
+        })
+        // console.log(apiData)
+    }
+
+    //////////////////////////
+      addExpenseForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const newExpense = {
+      description: document.getElementById("description").value,
+      category: document.getElementById("category").value,
+      amount: parseFloat(document.getElementById("amount").value),
+      month: document.getElementById("month").value,
+    };
+        apiData.push(newExpense);
+
+    if (newExpense.month === selectedMonth) {
+      secondCell(selectedMonth);
+    }
+    else{
+        displayMonths()
+    }
+
+    // addExpenseForm.reset();
+  });
+    /////////////////////////
+
+    const displayMonths=()=>{
+        const monthsContainer = document.getElementById("months");
+        monthsContainer.innerHTML=""
+        const uniqueMonths = [...new Set(apiData.map((exp) => exp.month))];
+        for (const months of uniqueMonths){
+            console.log(months)
+            const monthDiv = document.createElement("div")
+            monthDiv.textContent = months
+            monthDiv.className = "cursor-pointer px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+            monthDiv.addEventListener("click", ()=>{
+                secondCell(months)
+            })
+            monthsContainer.appendChild(monthDiv)
+        }
+    }
+
+    const secondCell=(month)=>{
+        selectedMonth = month
+        console.log(month)
+       const filteredApiData = apiData.filter((data) => data.month === month);
+       const expenseTableBody = document.querySelector("#expenseTable tbody");
+       expenseTableBody.innerHTML = "";
+    let grandTotal = 0;
+
+    filteredApiData.forEach((exp, index) => {
+      const row = expenseTableBody.insertRow();
+      row.innerHTML = `
+        <td class="border border-gray-300 px-2 py-1">${index + 1}</td>
+        <td class="border border-gray-300 px-2 py-1">${exp.category}</td>
+        <td class="border border-gray-300 px-2 py-1">${exp.amount}</td>
+      `;
+      grandTotal += exp.amount;
+    })
+
+    const grandTotalshow = document.getElementById("grandTotal")
+    grandTotalshow.textContent = grandTotal
+
+    const showDetailsButton = document.getElementById("showDetails")
+    showDetailsButton.disabled = false
+    showDetailsButton.classList.remove("bg-gray-500", "cursor-not-allowed")
+    showDetailsButton.classList.add("bg-blue-500", "cursor-pointer") 
+
+    showDetailsButton.addEventListener("click", () => {
+    const filteredExpenses = apiData.filter((exp) => exp.month === month);
+    const detailsTableBody = document.querySelector("#detailsTable tbody");
+    const totalAmountCell = document.getElementById("totalAmount");
+    detailsTableBody.innerHTML = "";
+    let totalAmount = 0;
+
+    filteredExpenses.forEach((exp, index) => {
+      const row = detailsTableBody.insertRow();
+      row.innerHTML = `
+        <td class="border border-gray-300 px-2 py-1">${index + 1}</td>
+        <td class="border border-gray-300 px-2 py-1">${exp.description}</td>
+        <td class="border border-gray-300 px-2 py-1">${exp.category}</td>
+        <td class="border border-gray-300 px-2 py-1">${exp.amount}</td>
+      `;
+      totalAmount += exp.amount;
+    });
+
+    totalAmountCell.textContent = totalAmount;
+  });
+
+}
+
+</script>
+
+</html>
