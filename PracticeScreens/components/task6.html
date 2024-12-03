@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task 6</title>
+    <link rel="stylesheet" href="../output.css">
+</head>
+<body>
+    <div class="bg-slate-200 w-full h-screen p-5 flex flex-row">
+        <div class="w-1/2 h-full border border-black mr-2" id="col1">
+            <h1 class="font-semibold text-center m-2"> Names</h1>
+        </div>
+        <div class="w-1/2 h-full border border-black ml-2" id="col2">
+            <h1 class="font-semibold text-center m-2"> Details</h1>
+            <form action="" id="forminputs">
+                <div class="m-5">
+                    <label for="name" class="font-medium ">Name:</label>
+                    <input type="text" id="name" class="rounded-lg w-2/3 h-10 outline-none border-none p-2">
+                </div>
+
+                <div class="m-5 flex items-center space-x-2">
+                    <label for="gender" class="font-medium mr-4">Gender: </label>
+                    <input type="radio" id="male" name="gender" class="w-8 h-10 outline-none border-none p-2 ">
+                    <label for="male">Male</label>
+                    <input type="radio" id="female" name="gender" class="w-8 h-10 outline-none border-none p-2 ">
+                    <label for="female">Female</label>
+                </div>
+
+                <div class="m-5 flex items-center space-x-2">
+                    <label for="interest" class="font-medium mr-4">Interest: </label>
+                    <input type="checkbox" id="Web Apps" name="Web Apps" class="w-8 h-10 outline-none border-none p-2 ">
+                    <label for="Web Apps">Web Apps</label>
+                    <input type="checkbox" id="ML" name="ML" class="w-8 h-10 outline-none border-none p-2 ">
+                    <label for="ML">ML</label>
+                    <input type="checkbox" id="Mobile Apps" name="Mobile Apps" class="w-8 h-10 outline-none border-none p-2 ">
+                    <label for="Mobile Apps">Mobile Apps</label>
+                </div>
+
+                <div class="m-5">
+                    <label for="country" class="font-medium">Country: </label>
+                    <select type="search" id="country" class="rounded-lg w-2/3 h-10 outline-none border-none p-2"></select>
+                    <!-- <option value=""></option> -->
+                </div>
+
+                <div class="m-5">
+                    <label for="city" class="font-medium">City: </label>
+                    <select type="search" id="city" class="rounded-lg w-2/3 h-10 outline-none border-none p-2"></select>
+                </div>
+
+                
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    let apiData = []
+
+    window.onload = function fetchAndShow(){
+        fetch("http://192.155.90.208/users.json")
+        .then((response) => response.json())
+        .then((data)=> {  /* for multiline statements we use {} braces*/
+            apiData = data
+            display()
+            return fetch("http://192.155.90.208/locations.json")
+        }).then((response) => response.json()).then((data)=> populateCountries(data))
+        .catch((error) => {
+            console.error("Error fetching data:", error) 
+        })
+        // console.log(apiData)
+    }
+
+    const display = ()=>{
+        const col1 = document.getElementById("col1")
+        // apiData.users.forEach(i=>{
+        //     console.log(i)
+        // })
+        apiData.users.forEach(element => {
+            const nameiDivs = document.createElement("div")
+            nameiDivs.textContent = element.name
+            nameiDivs.className = "bg-slate-600 cursor-pointer rounded-md text-lg m-1 p-2"
+            nameiDivs.addEventListener("click", ()=>{
+                populateInfeild(element)
+            })
+            col1.appendChild(nameiDivs)
+        });
+    }
+
+    const populateCountries=(data)=>{
+        // console.log(data)
+        const countries = document.getElementById("country")
+        // countries.innerHTML = `<option value="">Select Country</option>`
+        data.countries.forEach( (i) => {
+            const option = document.createElement("option")
+            option.value = i.name
+            option.textContent = i.name
+            countries.appendChild(option)
+        })
+
+        const city = document.getElementById("city")
+        data.countries.forEach( (a)=>{
+        a.cities.forEach( (i) =>{
+            const option = document.createElement("option")
+            option.value = i
+            option.textContent = i
+            city.appendChild(option)
+            })
+        })
+    }
+
+    const populateInfeild =(element)=>{
+        // console.log(element)
+        const form = document.getElementById("forminputs")
+        form.reset()
+        
+        const name = document.getElementById("name")
+        name.value = element.name
+
+        const maleRadio = document.getElementById("male");
+        const femaleRadio = document.getElementById("female");
+        if(element.gender === "Male"){
+            maleRadio.checked = true
+        }else{femaleRadio.checked = true}
+
+        const webAppsCheckbox = document.getElementById("Web Apps");
+        const mlCheckbox = document.getElementById("ML");
+        const mobileAppsCheckbox = document.getElementById("Mobile Apps");
+        if (element.interest === "Web Apps") {
+            webAppsCheckbox.checked = true;
+        }
+        if (element.interest.includes("ML")) {
+            mlCheckbox.checked = true;
+        }
+        if (element.interest.includes("Mobile Apps")) {
+            mobileAppsCheckbox.checked = true;
+        }
+
+        const countryField = document.getElementById("country");
+        countryField.value = element.country
+
+        const cityField = document.getElementById("city")
+        cityField.value = element.city
+    }
+
+</script>
+</html>
